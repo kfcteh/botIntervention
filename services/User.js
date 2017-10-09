@@ -1,28 +1,29 @@
 import models from '../app/db/models';
 import { getUserProfile } from '../bot/fBBot';
 
-export function updateUserFromFBEvent(event) {
-  getUserProfile(event.sender.id).then((profile) => {
+export async function updateUserFromFbEvent(event) {
+  try {
+    const profile = await getUserProfile(event.sender.id);
+
     const values = {
       fbId: event.sender.id,
       firstName: profile.first_name,
       lastName: profile.last_name,
       botState: {},
-    }
-    models.User.findOne({ 
+    };
+
+    const user = await models.User.findOne({
       where: {
         fbId: event.sender.id,
-      }
-    }).then((obj) => {
-      if(obj) { // update
-        return obj.update(values);
-      }
-      else { // insert
-        return models.User.create(values);
-      }
+      },
     });
-  }).catch((err) => {
-    console.err(err);
-  });
-};
+
+    if (user) { // update
+      return await user.update(values);
+    }
+    return await models.User.create(values);
+  } catch (err) {
+    console.error('services/User.js updateUserFromFBEvent(event)========>', err);
+  }
+}
 

@@ -1,5 +1,5 @@
 import Config from '../config/index';
-import { updateUserFromFBEvent } from '../services/User';
+import { updateUserFromFbEvent } from '../services/User';
 
 const request = require('request');
 
@@ -37,8 +37,8 @@ export function handleMessage(req, res) {
   if (data.object === 'page') {
     data.entry.forEach((entry) => {
       if (entry.messaging) {
-        entry.messaging.forEach((event) => {
-          updateUserFromFBEvent(event);
+        entry.messaging.forEach(async (event) => {
+          updateUserFromFbEvent(event);
           console.log('EVENT================================>', event);
         });
       }
