@@ -29,6 +29,7 @@
     "express": "^4.16.1",
     "locate-path": "^2.0.0",
     "pg": "^7.3.0",
+    "request": "^2.83.0",
     "sequelize": "^4.13.5",
     "supports-color": "^4.4.0"
   }
