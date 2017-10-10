@@ -17,7 +17,7 @@ export function callSendAPI(message) {
     json: message,
   }, (error, response, body) => {
     if (response.statusCode === 200) {
-      console.log('Successfully called Send API for recipient %s');
+      console.log('Successfully called Send API for recipient');
     } else {
       console.error('Failed calling Send API', body);
     }
