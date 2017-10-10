@@ -40,6 +40,7 @@ export function handleMessage(req, res) {
         entry.messaging.forEach(async (event) => {
           updateUserFromFbEvent(event);
           console.log('EVENT================================>', event);
+          console.log('socket server client count------>', req.app.get('socketio').eio);
         });
       }
     });
