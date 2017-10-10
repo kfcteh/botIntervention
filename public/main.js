@@ -17,6 +17,11 @@ $(function() {
 
   var socket = io();
 
+  $("#stop-suppot-btn").click(function() {
+    alert( "Handler for stop support called." );
+    socket.emit('stop support', fbUser);
+  });
+
   function addParticipantsMessage (data) {
     var message = '';
     if (data.numUsers === 1) {
@@ -58,10 +63,10 @@ $(function() {
         identifier: '007',
       }
       addMessage(message);
-      socket.emit('new message', JSON.stringify({
+      socket.emit('new message', {
         message: inputMessage,
         fbUser,
-      }));
+      });
     }
   }
   

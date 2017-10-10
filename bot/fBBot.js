@@ -1,5 +1,6 @@
 import Config from '../config/index';
-import { updateUserFromFbEvent } from '../services/User';
+import * as User from '../services/User';
+import states from './states';
 
 const request = require('request');
 
@@ -17,7 +18,7 @@ export function callSendAPI(message) {
     json: message,
   }, (error, response, body) => {
     if (response.statusCode === 200) {
-      console.log('Successfully called Send API for recipient');
+      console.log('Successfully called Send API');
     } else {
       console.error('Failed calling Send API', body);
     }
@@ -73,8 +74,8 @@ export function getUserProfile(id) {
  * Validates Messenger WebHook
  *
  * @export
- * @param {any} req 
- * @param {any} res 
+ * @param {any} req
+ * @param {any} res
  */
 export function validate(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
@@ -87,6 +88,14 @@ export function validate(req, res) {
   }
 }
 
+function startUserAssitance(req, event, user) {
+  Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
+    req.app.get('socketio').sockets.connected[key].emit('new message', JSON.stringify({
+      text: event.message.text,
+      user,
+    }));
+  });
+}
 
 /**
  * Entry Point FB Messenger Posts
@@ -101,14 +110,17 @@ export function handleMessage(req, res) {
     data.entry.forEach((entry) => {
       if (entry.messaging) {
         entry.messaging.forEach(async (event) => {
-          const updatedUser = await updateUserFromFbEvent(event);
-          Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
-            req.app.get('socketio').sockets.connected[key].emit('new message', JSON.stringify({
-              text: event.message.text,
-              user: updatedUser,
-            }));
-          });
-          sendTextMessage(updatedUser.fbId, event.message.text);
+          const updatedUser = await User.updateFromFbEvent(event);
+          if (event.message && event.message.text && event.message.text === 'help') {
+            await User.setHelpState(updatedUser);
+            startUserAssitance(req, event, updatedUser);
+            return;
+          }
+          if (updatedUser.botState.state === states.HELP) {
+            startUserAssitance(req, event, updatedUser);
+            return;
+          }
+          sendTextMessage(updatedUser.fbId, '☺️');
         });
       }
     });
