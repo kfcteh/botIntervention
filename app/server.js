@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import routes from './routes';
 import { sendTextMessage } from '../bot/fBBot';
+import * as User from '../services/User';
 
 const port = process.env.PORT || 5000;
 const env = process.env.ENV || 'development';
@@ -20,11 +21,11 @@ app.set('socketio', io);
 
 io.on('connection', (socket) => {
   console.log('new client connected');
-  socket.on('new message', function (data) {
-    // we tell the client to execute 'new message'
-    console.log('message sent from client', data);
-    const message = JSON.parse(data).message;
-    const fbId = JSON.parse(data).fbUser.fbId;
-    sendTextMessage(fbId, message);
+  socket.on('new message', (data) => {
+    sendTextMessage(data.fbUser.fbId, data.message);
+  });
+  socket.on('stop support', async (data) => {
+    const user = await User.findByFbId(data.fbId);
+    User.setNormalState(user);
   });
 });
