@@ -51,15 +51,12 @@ $(function() {
   // Sends a chat message
   function sendMessage () {
     var inputMessage = $inputMessage.val();
-    console.log('send message called from client------->', inputMessage);
-    console.log('connected', connected);
     if (inputMessage && connected) {
       const message = {
         text: inputMessage,
         fullName: 'Support',
         identifier: '007',
       }
-      console.log('before add message', message);
       addMessage(message);
       socket.emit('new message', JSON.stringify({
         message: inputMessage,
@@ -87,10 +84,7 @@ $(function() {
   // options.prepend - If the element should prepend
   //   all other messages (default = false)
   function addMessageElement (el, options) {
-    console.log('inside add message element');
     var $el = $(el);
-    console.log('messages--------->', $messages);
-    console.log('el--------------->', $el);
     $messages.append($el);
     $messages[0].scrollTop = $messages[0].scrollHeight;
   }
