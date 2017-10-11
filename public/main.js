@@ -5,11 +5,9 @@ $(function() {
   var $messages = $('.messages'); // Messages area
   var $inputMessage = $('.inputMessage'); // Input message input box
 
-  var $loginPage = $('.login.page'); // The login page
   var $chatPage = $('.chat.page'); // The chatroom page
 
   // Prompt for setting a username
-  var username;
   var connected = true;
   var typing = false;
   var $currentInput = $usernameInput.focus();
@@ -38,21 +36,6 @@ $(function() {
     addMessageElement($el, options);
   }
 
-  // Sets the client's username
-  function setUsername () {
-    username = cleanInput($usernameInput.val().trim());
-
-    // If the username is valid
-    if (username) {
-      $loginPage.fadeOut();
-      $chatPage.show();
-      $loginPage.off('click');
-      $currentInput = $inputMessage.focus();
-      // Tell the server your username
-      socket.emit('add user', username);
-    }
-  }
-
   // Sends a chat message
   function sendMessage () {
     var inputMessage = $inputMessage.val();
@@ -70,7 +53,6 @@ $(function() {
     }
   }
   
-
   // Adds the visual chat message to the message list
   function addMessage(message) {
     var $usernameDiv = $('<span class="username"/>')
@@ -107,22 +89,13 @@ $(function() {
     }
     // When the client hits ENTER on their keyboard
     if (event.which === 13) {
-      if (username) {
-        sendMessage();
-        socket.emit('stop typing');
-        typing = false;
-      } else {
-        setUsername();
-      }
+      sendMessage();
+      socket.emit('stop typing');
+      typing = false;
     }
   });
 
   // Click events
-
-  // Focus input when clicking anywhere on login page
-  $loginPage.click(function () {
-    $currentInput.focus();
-  });
 
   // Focus input when clicking on the message input's border
   $inputMessage.click(function () {
@@ -161,9 +134,6 @@ $(function() {
 
   socket.on('reconnect', function () {
     log('you have been reconnected');
-    if (username) {
-      socket.emit('add user', username);
-    }
   });
 
   socket.on('reconnect_error', function () {
