@@ -116,7 +116,7 @@ export function validate(req, res) {
   }
 }
 
-function startUserAssitance(req, event, user) {
+function redirectToUserAssitance(req, event, user) {
   Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
     req.app.get('socketio').sockets.connected[key].emit('new message', JSON.stringify({
       text: event.message.text,
@@ -144,18 +144,17 @@ export function handleMessage(req, res) {
             return;
           }
           if (event.message && event.message.text && event.message.text.toLowerCase() === 'exit') {
-            sendTextMessage(updatedUser.fbId, 'Okay, your customer support session has ended.');
             await User.setNormalState(updatedUser);
+            sendTextMessage(updatedUser.fbId, 'Okay, you have terminated your customer support session.');
             return;
           }
           if (event.message && event.message.quick_reply && event.message.quick_reply.payload === 'CUSTOMER_SUPPORT_YES') {
             sendTextMessage(updatedUser.fbId, 'Okay, a customer support representative will be with you shortly. Type \'exit\' to stop support session');
             await User.setHelpState(updatedUser);
-            startUserAssitance(req, event, updatedUser);
             return;
           }
           if (updatedUser.botState.state === states.HELP) {
-            startUserAssitance(req, event, updatedUser);
+            redirectToUserAssitance(req, event, updatedUser);
             return;
           }
           sendTextMessage(updatedUser.fbId, '☺️');
