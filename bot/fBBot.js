@@ -26,6 +26,35 @@ export function callSendAPI(message) {
 }
 
 /**
+ * Send Need Help Quick Reply To FB User
+ *
+ * @export
+ * @param {any} fbId
+ * @param {any} text
+ */
+function sendHelpQuickReply(fbId) {
+  const message = {
+    recipient: {
+      id: fbId,
+    },
+    message: {
+      text: 'Do you need help from customer support?',
+      quick_replies: [{
+        content_type: 'text',
+        title: 'Yes',
+        payload: 'CUSTOMER_SUPPORT_YES',
+      },
+      {
+        content_type: 'text',
+        title: 'No',
+        payload: 'CUSTOMER_SUPPORT_NO',
+      }],
+    },
+  };
+  callSendAPI(message);
+}
+
+/**
  * Sends Text message to Messenger User
  *
  * @export
@@ -39,7 +68,6 @@ export function sendTextMessage(fbId, text) {
     },
     message: {
       text,
-      metadata: 'DEVELOPER_DEFINED_METADATA',
     },
   };
   callSendAPI(message);
@@ -111,7 +139,17 @@ export function handleMessage(req, res) {
       if (entry.messaging) {
         entry.messaging.forEach(async (event) => {
           const updatedUser = await User.updateFromFbEvent(event);
-          if (event.message && event.message.text && event.message.text === 'help') {
+          if (event.message && event.message.text && event.message.text.toLowerCase() === 'help') {
+            sendHelpQuickReply(updatedUser.fbId);
+            return;
+          }
+          if (event.message && event.message.text && event.message.text.toLowerCase() === 'exit') {
+            sendTextMessage(updatedUser.fbId, 'Okay, your customer support session has ended.');
+            await User.setNormalState(updatedUser);
+            return;
+          }
+          if (event.message && event.message.quick_reply && event.message.quick_reply.payload === 'CUSTOMER_SUPPORT_YES') {
+            sendTextMessage(updatedUser.fbId, 'Okay, a customer support representative will be with you shortly. Type \'exit\' to stop support session');
             await User.setHelpState(updatedUser);
             startUserAssitance(req, event, updatedUser);
             return;
