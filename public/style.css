@@ -7,6 +7,14 @@
   height: calc(100vh - 220px); 
   overflow-y: auto;
 }
+
+.user {
+  padding: 1em;
+  border-bottom: 0.1em solid #aaa;
+  border-left: 0.1em solid #aaa;
+  text-align: center
+}
+
 .padding-top-bottom {
   padding: 3em;
 }

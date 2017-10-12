@@ -33,7 +33,6 @@
     "request": "^2.83.0",
     "sequelize": "^4.13.5",
     "socket.io": "^2.0.3",
-    "supports-color": "^4.4.0",
-    "websocket": "^1.0.24"
+    "supports-color": "^4.4.0"
   }
 }

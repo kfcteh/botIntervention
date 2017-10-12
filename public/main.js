@@ -59,7 +59,7 @@ $(function() {
   }
 
   function buildUserElement(user) {
-    return $('<div class="user" id="user_'+user.fbId+'">' + user.firstName + ' ' + user.lastName + '<a class="button is-primary" id="start-support-btn" data-fbId="'+user.fbId+'">Start Support</a></div>');
+    return $('<div class="user" id="user_'+user.fbId+'"><p>' + user.firstName + ' ' + user.lastName + '</p><a class="button is-primary" id="start-support-btn" data-fbId="'+user.fbId+'">Start Support</a></div>');
     addUserElement($messageDiv);
   }
 
