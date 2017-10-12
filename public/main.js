@@ -59,14 +59,36 @@ $(function() {
   }
 
   function buildUserElement(user) {
-    return $('<div class="user" id="' + user.fbId + '">' + user.firstName + ' ' + user.lastName + '</div>');
-    //addUserElement($messageDiv);
+    return $('<div class="user" id="user_'+user.fbId+'">' + user.firstName + ' ' + user.lastName + '<a class="button is-primary" id="start-support-btn" data-fbId="'+user.fbId+'">Start Support</a></div>');
+    addUserElement($messageDiv);
   }
 
   function addUserElement(el) {
     var $el = $(el);
     $users.append($el);
     $(".users").animate({ scrollTop: $('.users').prop("scrollHeight")}, 1000);
+  }
+
+  function stopSupport(fbId) {
+     //remove user from connected user object
+     delete connectedUsers[fbId];
+     //remove user from user list
+     $('#user_'+fbId).remove();
+     //empty all user messages
+     $messages.empty();
+     if (Object.keys(connectedUsers).length == 0) {
+       disableSendMessage();
+     }
+  }
+
+  function enableSendMessage() {
+    $inputMessage.removeAttr('disabled');
+    $sendBtn.removeAttr('disabled');
+  }
+
+  function disableSendMessage() {
+    $inputMessage.attr('disabled', 'disabled');
+    $sendBtn.attr('disabled', 'disabled');
   }
 
   // Keyboard events
@@ -78,26 +100,28 @@ $(function() {
   });
 
   // Click events
-  $(document).on('click', '.user', function() {
-    console.log('user clicked!!!', $(this).attr('id'));
-    currentUserFbId = $(this).attr('id');
+  $(document).on('click', '#start-support-btn', function() {
+    currentUserFbId = $(this).attr('data-fbId');
+    $(this).replaceWith($('<a class="button is-danger" id="stop-support-btn" data-fbId='+currentUserFbId+'>Stop Support</a></div>'))
 
-    $inputMessage.removeAttr('disabled');
-    $sendBtn.removeAttr('disabled');
+    enableSendMessage();
 
     if(!connectedUsers[currentUserFbId].messages) {
       connectedUsers[currentUserFbId].messages = $('<div class="messages" id="' + currentUserFbId + '"></div>');
     }
     $messages.replaceWith(connectedUsers[currentUserFbId].messages);
+    $messages = connectedUsers[currentUserFbId].messages;
   });
+
+  $(document).on('click', '#stop-support-btn', function() {
+    var fbId = $(this).attr('data-fbId');
+    socket.emit('stop support', connectedUsers[fbId].user);
+    stopSupport(fbId);
+  });
+
   // Focus input when clicking on the message input's border
   $inputMessage.click(function () {
     $inputMessage.focus();
-  });
-
-  $("#stop-suppot-btn").click(function() {
-    alert( "Handler for stop support called." );
-    socket.emit('stop support', fbUser);
   });
 
   $("#send-message-btn").click(function() {
@@ -115,14 +139,18 @@ $(function() {
     addIncomingMessage(message);
   });
 
-  socket.on('add user', function (data) {
-    if(!connectedUsers[data.user.fbId]) {
-      connectedUsers[data.user.fbId] = {
-        user: data.user,
+  socket.on('add user', function (user) {
+    if(!connectedUsers[user.fbId]) {
+      connectedUsers[user.fbId] = {
+        user,
       }
-      var userDiv = buildUserElement(data.user);
+      var userDiv = buildUserElement(user);
       addUserElement(userDiv);
     }
+  });
+
+  socket.on('stop support', function (user) {
+    stopSupport(user.fbId);
   });
 
   socket.on('disconnect', function () {

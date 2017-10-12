@@ -127,9 +127,13 @@ function redirectToUserAssitance(req, event, user) {
 
 function sendSupportClientNewUser(req, user) {
   Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
-    req.app.get('socketio').sockets.connected[key].emit('add user', {
-      user,
-    });
+    req.app.get('socketio').sockets.connected[key].emit('add user', user);
+  });
+}
+
+function sendClientStopSupport(req, user) {
+  Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
+    req.app.get('socketio').sockets.connected[key].emit('stop support', user);
   });
 }
 
@@ -154,6 +158,7 @@ export function handleMessage(req, res) {
           if (event.message && event.message.text && event.message.text.toLowerCase() === 'exit') {
             await User.setNormalState(updatedUser);
             sendTextMessage(updatedUser.fbId, 'Okay, you have terminated your customer support session.');
+            sendClientStopSupport(req, updatedUser);
             return;
           }
           if (event.message && event.message.quick_reply && event.message.quick_reply.payload === 'CUSTOMER_SUPPORT_YES') {

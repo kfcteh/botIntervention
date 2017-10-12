@@ -3,12 +3,17 @@ import { getUserProfile } from '../bot/fBBot';
 
 import states from '../bot/states';
 
+
+/**
+ * Update User Profile from facebook event
+ *
+ * @export
+ * @param {any} event 
+ * @returns promise
+ */
 export async function updateFromFbEvent(event) {
   try {
     const profile = await getUserProfile(event.sender.id);
-
-    console.log('---PROFILE------->', profile);
-
     const createValues = {
       fbId: event.sender.id,
       firstName: profile.first_name,
@@ -27,14 +32,21 @@ export async function updateFromFbEvent(event) {
     });
 
     if (user) { // update
-      return await user.update(updateValues);
+      return user.update(updateValues);
     }
-    return await models.User.create(createValues);
+    return models.User.create(createValues);
   } catch (err) {
     console.error('services/User.js updateUserFromFBEvent(event)========>', err);
   }
 }
 
+/**
+ * Updates user state column in database
+ *
+ * @param {any} state 
+ * @param {any} user 
+ * @returns promise
+ */
 function setState(state, user) {
   return user.update({
     botState: {
@@ -43,6 +55,13 @@ function setState(state, user) {
   });
 }
 
+/**
+ * Finds user by facebook id
+ *
+ * @export
+ * @param {any} id 
+ * @returns proimse
+ */
 export function findByFbId(id) {
   return models.User.findOne({
     where: {
@@ -50,9 +69,24 @@ export function findByFbId(id) {
     },
   });
 }
+
+/**
+ * Changes the users state to HELP
+ *
+ * @export
+ * @param {any} user
+ */
 export function setHelpState(user) {
   setState(states.HELP, user);
 }
+
+
+/**
+ * Changes the users state to NORMAL
+ *
+ * @export
+ * @param {any} user
+ */
 export function setNormalState(user) {
   setState(states.NORMAL, user);
 }
