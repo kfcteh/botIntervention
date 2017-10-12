@@ -7,6 +7,8 @@ export async function updateFromFbEvent(event) {
   try {
     const profile = await getUserProfile(event.sender.id);
 
+    console.log('---PROFILE------->', profile);
+
     const createValues = {
       fbId: event.sender.id,
       firstName: profile.first_name,
