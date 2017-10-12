@@ -1,27 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Support</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.0/css/bulma.min.css">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <nav class="navbar padding-top-bottom">
+      <div class="center-div">
+        <img src="images/messengerlogo.png" alt="Chat logo" style="height: 30px; width: 30px;">
+        <span class="title">Messenger Support</span>
+      </div>
+    </nav>
+    <div class="columns">
+      <div class="column is-three-quarters">
+        <div class="chatView">
 
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Bot Intervention</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <ul class="pages">
-    <li class="chat page">
-      <div class="chatArea">
-        <ul class="messages"></ul>
+        </div>
       </div>
-      <div id="stop-suppot-btn">
-        Stop Support
-      </div>
-      <input class="inputMessage" placeholder="Type here..."/>
-    </li>
+      <div class="column">
+        <div class="usersView">
     
-  </ul>
-
-  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/main.js"></script>
-</body>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="field is-grouped">
+        <p class="control is-expanded">
+          <input class="input input-height" type="text" placeholder="Type your message here....">
+        </p>
+        <p class="control">
+          <a class="button is-info is-large" id="send-message-btn">
+            SEND
+          </a>
+        </p>
+      </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/main.js"></script>
+  </body>
 </html>
