@@ -22,7 +22,6 @@ app.set('socketio', io);
 io.on('connection', (socket) => {
   console.log('new client connected');
   socket.on('new message', (data) => {
-    console.log(data);
     sendTextMessage(data.fbUser.fbId, data.message);
   });
   socket.on('stop support', async (data) => {
