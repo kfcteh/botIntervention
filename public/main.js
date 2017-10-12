@@ -1,16 +1,12 @@
 $(function() {
   // Initialize variables
   var $window = $(window);
-  var $usernameInput = $('.usernameInput'); // Input for username
-  var $messages = $('.messages'); // Messages area
-  var $inputMessage = $('.inputMessage'); // Input message input box
-
-  var $chatPage = $('.chat.page'); // The chatroom page
+  var $messages = $('.chatView'); // Messages area
+  var $inputMessage = $('.input'); // Input message input box
+  var $sendBtn = $('#send-message-btn'); // Send Button
 
   // Prompt for setting a username
   var connected = true;
-  var typing = false;
-  var $currentInput = $usernameInput.focus();
   var fbUser = null;
 
   var socket = io();
@@ -18,6 +14,10 @@ $(function() {
   $("#stop-suppot-btn").click(function() {
     alert( "Handler for stop support called." );
     socket.emit('stop support', fbUser);
+  });
+
+  $("#send-message-btn").click(function() {
+    sendMessage();
   });
 
   function addParticipantsMessage (data) {
@@ -31,12 +31,12 @@ $(function() {
   }
 
   // Log a message
-  function log (message, options) {
-    var $el = $('<li>').addClass('log').text(message);
-    addMessageElement($el, options);
+  function log (message) {
+    var $el = $('<p>').text(message);
+    addMessageElement($el);
   }
 
-  // Sends a chat message
+  // Sends a chat message to server
   function sendMessage () {
     var inputMessage = $inputMessage.val();
     if (inputMessage && connected) {
@@ -45,35 +45,34 @@ $(function() {
         fullName: 'Support',
         identifier: '007',
       }
-      addMessage(message);
+      addOutgoingMessage(message);
+      $inputMessage.val('');
       socket.emit('new message', {
         message: inputMessage,
         fbUser,
       });
     }
   }
-  
+
   // Adds the visual chat message to the message list
-  function addMessage(message) {
-    var $usernameDiv = $('<span class="username"/>')
-      .text(message.fullName);
-    var $messageBodyDiv = $('<span class="messageBody">')
-      .text(message.text);
-    var $messageDiv = $('<li class="message"/>')
-      .data('username', message.identifier)
-      .append($usernameDiv, $messageBodyDiv);
+  function addOutgoingMessage(message) {
+    console.log(message);
+    var $messageDiv = $('<div class="column is-half margin-top-bottom"><div class="padding-left-right-10px"><span><b>You</b></span></div><div class="padding-left-right-10px"><span>'+message.text+'</span></div></div>')
+    addMessageElement($messageDiv);
+  }
+
+  function addIncomingMessage(message) {
+    console.log(message);
+    var $messageDiv = $('<div class="column is-half is-offset-6 margin-top-bottom"><div class="padding-left-right-10px"><span><b>'+message.fullName+'</b></span></div><div class="padding-left-right-10px"><span>'+message.text+'</span></div></div>')
     addMessageElement($messageDiv);
   }
 
   // Adds a message element to the messages and scrolls to the bottom
   // el - The element to add as a message
-  // options.fade - If the element should fade-in (default = true)
-  // options.prepend - If the element should prepend
-  //   all other messages (default = false)
-  function addMessageElement (el, options) {
+  function addMessageElement (el) {
     var $el = $(el);
     $messages.append($el);
-    $messages[0].scrollTop = $messages[0].scrollHeight;
+    $(".chatView").animate({ scrollTop: $('.chatView').prop("scrollHeight")}, 1000);
   }
 
   // Prevents input from having injected markup
@@ -83,15 +82,9 @@ $(function() {
   // Keyboard events
 
   $window.keydown(function (event) {
-    // Auto-focus the current input when a key is typed
-    if (!(event.ctrlKey || event.metaKey || event.altKey)) {
-      $currentInput.focus();
-    }
     // When the client hits ENTER on their keyboard
     if (event.which === 13) {
       sendMessage();
-      socket.emit('stop typing');
-      typing = false;
     }
   });
 
@@ -103,18 +96,6 @@ $(function() {
   });
 
   // Socket events
-
-  // Whenever the server emits 'login', log the login message
-  socket.on('login', function (data) {
-    connected = true;
-    // Display the welcome message
-    var message = "Welcome to Socket.IO Chat – ";
-    log(message, {
-      prepend: true
-    });
-    addParticipantsMessage(data);
-  });
-
   // Whenever the server emits 'new message', update the chat body
   socket.on('new message', function (data) {
     const parsedData = JSON.parse(data);
@@ -125,7 +106,7 @@ $(function() {
       fullName: fbUser.firstName + ' ' + fbUser.lastName,
       identifier: fbUser.fbId,
     }
-    addMessage(message);
+    addIncomingMessage(message);
   });
 
   socket.on('disconnect', function () {
