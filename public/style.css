@@ -1,9 +1,9 @@
-.chatView {
+.messages {
   height: calc(100vh - 220px); 
   padding: 16px 8px; 
   overflow-y: auto;
 }
-.usersView {
+.users {
   height: calc(100vh - 220px); 
   overflow-y: auto;
 }
@@ -13,6 +13,7 @@
 
 .input {
  font-size: 1.6em;
+ 
 }
 
 .title {

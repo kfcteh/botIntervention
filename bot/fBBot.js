@@ -118,10 +118,22 @@ export function validate(req, res) {
 
 function redirectToUserAssitance(req, event, user) {
   Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
-    req.app.get('socketio').sockets.connected[key].emit('new message', JSON.stringify({
+    req.app.get('socketio').sockets.connected[key].emit('new message', {
       text: event.message.text,
       user,
-    }));
+    });
+  });
+}
+
+function sendSupportClientNewUser(req, user) {
+  Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
+    req.app.get('socketio').sockets.connected[key].emit('add user', user);
+  });
+}
+
+function sendClientStopSupport(req, user) {
+  Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
+    req.app.get('socketio').sockets.connected[key].emit('stop support', user);
   });
 }
 
@@ -146,11 +158,13 @@ export function handleMessage(req, res) {
           if (event.message && event.message.text && event.message.text.toLowerCase() === 'exit') {
             await User.setNormalState(updatedUser);
             sendTextMessage(updatedUser.fbId, 'Okay, you have terminated your customer support session.');
+            sendClientStopSupport(req, updatedUser);
             return;
           }
           if (event.message && event.message.quick_reply && event.message.quick_reply.payload === 'CUSTOMER_SUPPORT_YES') {
             sendTextMessage(updatedUser.fbId, 'Okay, a customer support representative will be with you shortly. Type \'exit\' to stop support session');
             await User.setHelpState(updatedUser);
+            sendSupportClientNewUser(req, updatedUser);
             return;
           }
           if (updatedUser.botState.state === states.HELP) {

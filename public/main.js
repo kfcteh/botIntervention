@@ -1,34 +1,18 @@
 $(function() {
   // Initialize variables
   var $window = $(window);
-  var $messages = $('.chatView'); // Messages area
-  var $inputMessage = $('.input'); // Input message input box
+  var $messages = $('.messages'); // Messages area
+  var $users =  $('.users'); // Users area
+  var $inputMessage = $('#send-message-textInput'); // Input message input box
   var $sendBtn = $('#send-message-btn'); // Send Button
 
+  var currentUserFbId = null; // User that is being supported
+
+  var connectedUsers = {};
+  
   // Prompt for setting a username
   var connected = true;
-  var fbUser = null;
-
   var socket = io();
-
-  $("#stop-suppot-btn").click(function() {
-    alert( "Handler for stop support called." );
-    socket.emit('stop support', fbUser);
-  });
-
-  $("#send-message-btn").click(function() {
-    sendMessage();
-  });
-
-  function addParticipantsMessage (data) {
-    var message = '';
-    if (data.numUsers === 1) {
-      message += "there's 1 participant";
-    } else {
-      message += "there are " + data.numUsers + " participants";
-    }
-    log(message);
-  }
 
   // Log a message
   function log (message) {
@@ -43,44 +27,71 @@ $(function() {
       const message = {
         text: inputMessage,
         fullName: 'Support',
-        identifier: '007',
+        identifier: null,
       }
       addOutgoingMessage(message);
       $inputMessage.val('');
       socket.emit('new message', {
         message: inputMessage,
-        fbUser,
+        fbUser: connectedUsers[currentUserFbId].user,
       });
     }
   }
 
   // Adds the visual chat message to the message list
   function addOutgoingMessage(message) {
-    console.log(message);
     var $messageDiv = $('<div class="column is-half margin-top-bottom"><div class="padding-left-right-10px"><span><b>You</b></span></div><div class="padding-left-right-10px"><span>'+message.text+'</span></div></div>')
-    addMessageElement($messageDiv);
+    addMessageElement($messageDiv, message.identifier);
   }
 
   function addIncomingMessage(message) {
-    console.log(message);
     var $messageDiv = $('<div class="column is-half is-offset-6 margin-top-bottom"><div class="padding-left-right-10px"><span><b>'+message.fullName+'</b></span></div><div class="padding-left-right-10px"><span>'+message.text+'</span></div></div>')
-    addMessageElement($messageDiv);
+    addMessageElement($messageDiv, message.identifier);
   }
 
   // Adds a message element to the messages and scrolls to the bottom
   // el - The element to add as a message
-  function addMessageElement (el) {
+  function addMessageElement (el, fbId) {
     var $el = $(el);
-    $messages.append($el);
-    $(".chatView").animate({ scrollTop: $('.chatView').prop("scrollHeight")}, 1000);
+    var messages = fbId ? connectedUsers[fbId].messages : connectedUsers[currentUserFbId].messages;
+    messages.append($el);
+    messages.animate({ scrollTop: messages.prop("scrollHeight")}, 1000);
   }
 
-  // Prevents input from having injected markup
-  function cleanInput (input) {
-    return $('<div/>').text(input).html();
+  function buildUserElement(user) {
+    return $('<div class="user" id="user_'+user.fbId+'">' + user.firstName + ' ' + user.lastName + '<a class="button is-primary" id="start-support-btn" data-fbId="'+user.fbId+'">Start Support</a></div>');
+    addUserElement($messageDiv);
   }
+
+  function addUserElement(el) {
+    var $el = $(el);
+    $users.append($el);
+    $(".users").animate({ scrollTop: $('.users').prop("scrollHeight")}, 1000);
+  }
+
+  function stopSupport(fbId) {
+     //remove user from connected user object
+     delete connectedUsers[fbId];
+     //remove user from user list
+     $('#user_'+fbId).remove();
+     //empty all user messages
+     $messages.empty();
+     if (Object.keys(connectedUsers).length == 0) {
+       disableSendMessage();
+     }
+  }
+
+  function enableSendMessage() {
+    $inputMessage.removeAttr('disabled');
+    $sendBtn.removeAttr('disabled');
+  }
+
+  function disableSendMessage() {
+    $inputMessage.attr('disabled', 'disabled');
+    $sendBtn.attr('disabled', 'disabled');
+  }
+
   // Keyboard events
-
   $window.keydown(function (event) {
     // When the client hits ENTER on their keyboard
     if (event.which === 13) {
@@ -89,24 +100,57 @@ $(function() {
   });
 
   // Click events
+  $(document).on('click', '#start-support-btn', function() {
+    currentUserFbId = $(this).attr('data-fbId');
+    $(this).replaceWith($('<a class="button is-danger" id="stop-support-btn" data-fbId='+currentUserFbId+'>Stop Support</a></div>'))
+
+    enableSendMessage();
+
+    if(!connectedUsers[currentUserFbId].messages) {
+      connectedUsers[currentUserFbId].messages = $('<div class="messages" id="' + currentUserFbId + '"></div>');
+    }
+    $messages.replaceWith(connectedUsers[currentUserFbId].messages);
+    $messages = connectedUsers[currentUserFbId].messages;
+  });
+
+  $(document).on('click', '#stop-support-btn', function() {
+    var fbId = $(this).attr('data-fbId');
+    socket.emit('stop support', connectedUsers[fbId].user);
+    stopSupport(fbId);
+  });
 
   // Focus input when clicking on the message input's border
   $inputMessage.click(function () {
     $inputMessage.focus();
   });
 
+  $("#send-message-btn").click(function() {
+    sendMessage();
+  });
+
   // Socket events
   // Whenever the server emits 'new message', update the chat body
   socket.on('new message', function (data) {
-    const parsedData = JSON.parse(data);
-    fbUser = parsedData.user;
-    const text = parsedData.text;
     const message = {
-      text,
-      fullName: fbUser.firstName + ' ' + fbUser.lastName,
-      identifier: fbUser.fbId,
+      text: data.text,
+      fullName: data.user.firstName + ' ' + data.user.lastName,
+      identifier: data.user.fbId,
     }
     addIncomingMessage(message);
+  });
+
+  socket.on('add user', function (user) {
+    if(!connectedUsers[user.fbId]) {
+      connectedUsers[user.fbId] = {
+        user,
+      }
+      var userDiv = buildUserElement(user);
+      addUserElement(userDiv);
+    }
+  });
+
+  socket.on('stop support', function (user) {
+    stopSupport(user.fbId);
   });
 
   socket.on('disconnect', function () {

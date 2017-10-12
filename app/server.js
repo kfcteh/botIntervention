@@ -27,6 +27,6 @@ io.on('connection', (socket) => {
   socket.on('stop support', async (data) => {
     const user = await User.findByFbId(data.fbId);
     await User.setNormalState(user);
-    sendTextMessage(data.fbUser.fbId, 'Support has ended your support session.');
+    sendTextMessage(data.fbId, 'Support has ended your support session.');
   });
 });
