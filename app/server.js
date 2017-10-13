@@ -20,7 +20,6 @@ const io = require('socket.io')(app.listen(port, () => {
 app.set('socketio', io);
 
 io.on('connection', (socket) => {
-  console.log('new client connected');
   socket.on('new message', (data) => {
     sendTextMessage(data.fbUser.fbId, data.message);
   });
