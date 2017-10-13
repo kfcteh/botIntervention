@@ -47,6 +47,10 @@
   margin-right: auto;
 }
 
+.float-right {
+  float: right;
+}
+
 /* container */
 .container {
   padding: 5% 5%;

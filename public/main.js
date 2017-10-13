@@ -45,7 +45,7 @@ $(function() {
       <div class="talk-bubble tri-right left-top outgoing-bubble"> \
         <div class="talktext"> \
           <p>You:</p> \
-          <p>'+message.text+'</p> \
+          <p>'+ message.text + '</p> \
         </div> \
       </div> \
     </div>');
@@ -55,14 +55,18 @@ $(function() {
 
   function addIncomingMessage(message) {
     var $messageDiv = $('\
-    <div class="column is-half is-offset-6"> \
-      <div class="talk-bubble tri-right right-top"> \
-        <div class="talktext"> \
-          <p>'+message.fullName+'</p> \
-          <p>'+message.text+'</p> \
-        </div> \
-      </div> \
+    <div class="column is-half is-offset-6">\
+      <div class="float-right">\
+        <div class="talk-bubble tri-right right-top">\
+          <div class="talktext">\
+            <p>' + message.fullName + '</p>\
+            <p>' + message.text + '</p>\
+          </div>\
+        </div>\
+      <img class="img-circle" src="' + message.avatar + '" alt="avatar" height="50" width="50">\
+      </div>\
     </div>');
+
     addMessageElement($messageDiv, message.identifier);
   }
 
@@ -76,7 +80,12 @@ $(function() {
   }
 
   function buildUserElement(user) {
-    return $('<div class="user" id="user_'+user.fbId+'"><img class="img-circle" src="'+ user.avatar+'" alt="avatar" height="70" width="70"><p>' + user.firstName + ' ' + user.lastName + '</p><a class="button is-primary" id="start-support-btn" data-fbId="'+user.fbId+'">Start Support</a></div>');
+    return $('\
+      <div class="user" id="user_' + user.fbId + '">\
+        <img class="img-circle" src="' + user.avatar + '" alt="avatar" height="70" width="70">\
+        <p>' + user.firstName + ' ' + user.lastName + '</p>\
+        <a class="button is-primary" id="start-support-btn" data-fbId="' + user.fbId + '">Start Support</a>\
+      </div>');
     addUserElement($messageDiv);
   }
 
@@ -119,7 +128,7 @@ $(function() {
   // Click events
   $(document).on('click', '#start-support-btn', function() {
     currentUserFbId = $(this).attr('data-fbId');
-    $(this).replaceWith($('<a class="button is-danger" id="stop-support-btn" data-fbId='+currentUserFbId+'>Stop Support</a></div>'))
+    $(this).replaceWith($('<a class="button is-danger" id="stop-support-btn" data-fbId='+currentUserFbId+'>Stop Support</a>'))
 
     enableSendMessage();
 
@@ -152,6 +161,7 @@ $(function() {
       text: data.text,
       fullName: data.user.firstName + ' ' + data.user.lastName,
       identifier: data.user.fbId,
+      avatar: data.user.avatar,
     }
     addIncomingMessage(message);
   });
