@@ -1,6 +1,7 @@
 import Config from '../config/index';
 import * as User from '../services/User';
 import states from './states';
+import * as BotActions from './botActions';
 
 const request = require('request');
 
@@ -23,54 +24,6 @@ export function callSendAPI(message) {
       console.error('Failed calling Send API', body);
     }
   });
-}
-
-/**
- * Send Need Help Quick Reply To FB User
- *
- * @export
- * @param {any} fbId
- * @param {any} text
- */
-function sendHelpQuickReply(fbId) {
-  const message = {
-    recipient: {
-      id: fbId,
-    },
-    message: {
-      text: 'Do you need help from customer support?',
-      quick_replies: [{
-        content_type: 'text',
-        title: 'Yes',
-        payload: 'CUSTOMER_SUPPORT_YES',
-      },
-      {
-        content_type: 'text',
-        title: 'No',
-        payload: 'CUSTOMER_SUPPORT_NO',
-      }],
-    },
-  };
-  callSendAPI(message);
-}
-
-/**
- * Sends Text message to Messenger User
- *
- * @export
- * @param {any} fbId
- * @param {any} text
- */
-export function sendTextMessage(fbId, text) {
-  const message = {
-    recipient: {
-      id: fbId,
-    },
-    message: {
-      text,
-    },
-  };
-  callSendAPI(message);
 }
 
 /**
@@ -116,27 +69,6 @@ export function validate(req, res) {
   }
 }
 
-function redirectToUserAssitance(req, event, user) {
-  Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
-    req.app.get('socketio').sockets.connected[key].emit('new message', {
-      text: event.message.text,
-      user,
-    });
-  });
-}
-
-function sendSupportClientNewUser(req, user) {
-  Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
-    req.app.get('socketio').sockets.connected[key].emit('add user', user);
-  });
-}
-
-function sendClientStopSupport(req, user) {
-  Object.keys(req.app.get('socketio').sockets.connected).forEach((key) => {
-    req.app.get('socketio').sockets.connected[key].emit('stop support', user);
-  });
-}
-
 /**
  * Entry Point FB Messenger Posts
  *
@@ -152,26 +84,22 @@ export function handleMessage(req, res) {
         entry.messaging.forEach(async (event) => {
           const updatedUser = await User.updateFromFbEvent(event);
           if (event.message && event.message.text && event.message.text.toLowerCase() === 'help') {
-            sendHelpQuickReply(updatedUser.fbId);
+            BotActions.sendHelpQuickReply(updatedUser.fbId);
             return;
           }
           if (event.message && event.message.text && event.message.text.toLowerCase() === 'exit') {
-            await User.setNormalState(updatedUser);
-            sendTextMessage(updatedUser.fbId, 'Okay, you have terminated your customer support session.');
-            sendClientStopSupport(req, updatedUser);
+            BotActions.exitSupportSession(req, updatedUser);
             return;
           }
           if (event.message && event.message.quick_reply && event.message.quick_reply.payload === 'CUSTOMER_SUPPORT_YES') {
-            sendTextMessage(updatedUser.fbId, 'Okay, a customer support representative will be with you shortly. Type \'exit\' to stop support session');
-            await User.setHelpState(updatedUser);
-            sendSupportClientNewUser(req, updatedUser);
+            BotActions.startCustomerSupport(req, updatedUser);
             return;
           }
           if (updatedUser.botState.state === states.HELP) {
-            redirectToUserAssitance(req, event, updatedUser);
+            BotActions.redirectToUserAssitance(req, event, updatedUser);
             return;
           }
-          sendTextMessage(updatedUser.fbId, '☺️');
+          BotActions.sendTextMessage(updatedUser.fbId, '☺️');
         });
       }
     });

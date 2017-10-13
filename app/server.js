@@ -1,7 +1,7 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 import routes from './routes';
-import { sendTextMessage } from '../bot/fBBot';
+import { sendTextMessage } from '../bot/botActions';
 import * as User from '../services/User';
 
 const port = process.env.PORT || 5000;
