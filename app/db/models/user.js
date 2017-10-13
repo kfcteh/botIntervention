@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     lastName: DataTypes.STRING,
     fbId: DataTypes.STRING,
     botState: DataTypes.JSONB,
+    avatar: DataTypes.STRING,
   }, {
     classMethods: {
       associate: function(models) {

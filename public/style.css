@@ -1,17 +1,19 @@
 .messages {
-  height: calc(100vh - 220px); 
+  height: calc(100vh - 235px); 
   padding: 16px 8px; 
   overflow-y: auto;
 }
 .users {
-  height: calc(100vh - 220px); 
+  height: calc(100vh - 235px); 
   overflow-y: auto;
+}
+
+.img-circle {
+  border-radius: 50%;
 }
 
 .user {
   padding: 1em;
-  border-bottom: 0.1em solid #aaa;
-  border-left: 0.1em solid #aaa;
   text-align: center
 }
 
@@ -43,4 +45,59 @@
 .center-div {
   margin-left: auto;
   margin-right: auto;
+}
+
+/* container */
+.container {
+  padding: 5% 5%;
+}
+
+/* CSS talk bubble */
+.talk-bubble {
+	margin: 5px 40px;
+  display: inline-block;
+  position: relative;
+	height: auto;
+	background-color: lightyellow;
+}
+.outgoing-bubble {
+  background-color: lightblue;
+}
+
+.tri-right.left-top:after{
+	content: ' ';
+	position: absolute;
+	width: 0;
+	height: 0;
+  left: -20px;
+	right: auto;
+  top: 0px;
+	bottom: auto;
+	border: 22px solid;
+	border-color: lightblue transparent transparent transparent;
+}
+
+.tri-right.right-top:after{
+	content: ' ';
+	position: absolute;
+	width: 0;
+	height: 0;
+  left: auto;
+	right: -20px;
+  top: 0px;
+	bottom: auto;
+	border: 20px solid;
+	border-color: lightyellow transparent transparent transparent;
+}
+
+/* talk bubble contents */
+.talktext{
+  padding: 1em;
+	text-align: left;
+  line-height: 1.5em;
+}
+.talktext p{
+  /* remove webkit p margins */
+  -webkit-margin-before: 0em;
+  -webkit-margin-after: 0em;
 }
