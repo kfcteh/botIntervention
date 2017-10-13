@@ -40,12 +40,29 @@ $(function() {
 
   // Adds the visual chat message to the message list
   function addOutgoingMessage(message) {
-    var $messageDiv = $('<div class="column is-half margin-top-bottom"><div class="padding-left-right-10px"><span><b>You</b></span></div><div class="padding-left-right-10px"><span>'+message.text+'</span></div></div>')
+    var $messageDiv = $('\
+    <div class="column is-half"> \
+      <div class="talk-bubble tri-right left-top outgoing-bubble"> \
+        <div class="talktext"> \
+          <p>You:</p> \
+          <p>'+message.text+'</p> \
+        </div> \
+      </div> \
+    </div>');
+
     addMessageElement($messageDiv, message.identifier);
   }
 
   function addIncomingMessage(message) {
-    var $messageDiv = $('<div class="column is-half is-offset-6 margin-top-bottom"><div class="padding-left-right-10px"><span><b>'+message.fullName+'</b></span></div><div class="padding-left-right-10px"><span>'+message.text+'</span></div></div>')
+    var $messageDiv = $('\
+    <div class="column is-half is-offset-6"> \
+      <div class="talk-bubble tri-right right-top"> \
+        <div class="talktext"> \
+          <p>'+message.fullName+'</p> \
+          <p>'+message.text+'</p> \
+        </div> \
+      </div> \
+    </div>');
     addMessageElement($messageDiv, message.identifier);
   }
 
@@ -59,7 +76,7 @@ $(function() {
   }
 
   function buildUserElement(user) {
-    return $('<div class="user" id="user_'+user.fbId+'"><p>' + user.firstName + ' ' + user.lastName + '</p><a class="button is-primary" id="start-support-btn" data-fbId="'+user.fbId+'">Start Support</a></div>');
+    return $('<div class="user" id="user_'+user.fbId+'"><img class="img-circle" src="'+ user.avatar+'" alt="avatar" height="70" width="70"><p>' + user.firstName + ' ' + user.lastName + '</p><a class="button is-primary" id="start-support-btn" data-fbId="'+user.fbId+'">Start Support</a></div>');
     addUserElement($messageDiv);
   }
 

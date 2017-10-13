@@ -14,15 +14,18 @@ import states from '../bot/states';
 export async function updateFromFbEvent(event) {
   try {
     const profile = await getUserProfile(event.sender.id);
+
     const createValues = {
       fbId: event.sender.id,
       firstName: profile.first_name,
       lastName: profile.last_name,
+      avatar: profile.profile_pic,
       botState: {},
     };
     const updateValues = {
       firstName: profile.first_name,
       lastName: profile.last_name,
+      avatar: profile.profile_pic,
     };
 
     const user = await models.User.findOne({
@@ -59,7 +62,7 @@ function setState(state, user) {
  * Finds user by facebook id
  *
  * @export
- * @param {any} id 
+ * @param {any} id
  * @returns proimse
  */
 export function findByFbId(id) {
