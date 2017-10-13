@@ -18,7 +18,7 @@ export function callSendAPI(message) {
     method: 'POST',
     json: message,
   }, (error, response, body) => {
-    if (response.statusCode === 200) {
+    if (response && response.statusCode === 200) {
       console.log('Successfully called Send API');
     } else {
       console.error('Failed calling Send API', body);
@@ -42,7 +42,7 @@ export function getUserProfile(id) {
       },
       method: 'GET',
     }, (error, response, body) => {
-      if (response.statusCode === 200) {
+      if (response && response.statusCode === 200) {
         resolve(JSON.parse(body));
       } else {
         reject(response.statusCode);
@@ -83,20 +83,21 @@ export function handleMessage(req, res) {
       if (entry.messaging) {
         entry.messaging.forEach(async (event) => {
           const updatedUser = await User.updateFromFbEvent(event);
+          const socketio = req.app.get('socketio');
           if (event.message && event.message.text && event.message.text.toLowerCase() === 'help') {
-            BotActions.sendHelpQuickReply(updatedUser.fbId);
+            BotActions.sendHelpQuickReply(socketio, updatedUser.fbId);
             return;
           }
           if (event.message && event.message.text && event.message.text.toLowerCase() === 'exit') {
-            BotActions.exitSupportSession(req, updatedUser);
+            BotActions.exitSupportSession(socketio, updatedUser);
             return;
           }
           if (event.message && event.message.quick_reply && event.message.quick_reply.payload === 'CUSTOMER_SUPPORT_YES') {
-            BotActions.startCustomerSupport(req, updatedUser);
+            BotActions.startCustomerSupport(socketio, updatedUser);
             return;
           }
           if (updatedUser.botState.state === states.HELP) {
-            BotActions.redirectToUserAssitance(req, event, updatedUser);
+            BotActions.redirectToUserAssitance(socketio, event, updatedUser);
             return;
           }
           BotActions.sendTextMessage(updatedUser.fbId, '☺️');
